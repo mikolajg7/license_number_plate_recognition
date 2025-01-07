@@ -8,7 +8,6 @@ def adjust_gamma(image, gamma=1.0):
     invGamma = 1.0 / gamma
     table = np.array([((i / 255.0) ** invGamma) * 255
                       for i in np.arange(0, 256)]).astype("uint8")
-    # Apply gamma correction using the lookup table
     return cv2.LUT(image, table)
 
 # Read the image
@@ -40,7 +39,6 @@ for contour in contours:
     approx = cv2.approxPolyDP(contour, 10, True)
     (x, y, w, h) = cv2.boundingRect(contour)
     ar = w / float(h)
-    # Check if the aspect ratio falls within a specific range
     if ar >= 2.5 and ar <= 4.7:
         location = contour
         break
@@ -57,13 +55,17 @@ if location is not None:
     (x2, y2) = (np.max(x), np.max(y))
     cropped_image = img[x1:x2 + 1, y1:y2 + 1]
 
-    # Display the cropped image
-    cv2.imshow('Cropped Image', cropped_image)
-    cv2.waitKey(0)
-
     # OCR
     custom_config = r'--oem 3 --psm 13'
     text = pytesseract.image_to_string(cropped_image, config=custom_config)
-    print(text)
+    print("Detected Text:", text)
+
+    # Display the cropped image in a persistent window
+    cv2.imshow('Cropped Image', cropped_image)
+    print("Press 'q' to close the image window.")
+    while True:
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    cv2.destroyAllWindows()
 else:
     print("License plate not found")
